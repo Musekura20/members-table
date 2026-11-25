@@ -7,7 +7,13 @@ const columns = [
   { label: 'Company', key: null },
 ]
 
-export default function UsersTable({ users, isUpdating }) {
+export default function UsersTable({
+  users,
+  isUpdating,
+  sortBy,
+  order,
+  onSort,
+}) {
   return (
     <div className="overflow-x-auto rounded-xl border border-[#E8D7C6] bg-white">
       <table className="w-full min-w-[850px] border-collapse text-left">
@@ -18,7 +24,30 @@ export default function UsersTable({ users, isUpdating }) {
                 key={column.label}
                 className="px-5 py-4 text-sm font-semibold"
               >
-                {column.label}
+                {column.key ? (
+                  <button
+                    type="button"
+                    onClick={() => onSort(column.key)}
+                    className="flex items-center gap-2 hover:text-[#E8D7C6] focus:outline-none focus:ring-2 focus:ring-[#B66D45]"
+                    aria-label={`Sort by ${column.label}`}
+                    aria-sort={
+                      sortBy === column.key
+                        ? order === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
+                  >
+                    {column.label}
+                    <span>
+                      {sortBy === column.key
+                        ? order === 'asc' ? '↑' : '↓'
+                        : '↕'}
+                    </span>
+                  </button>
+                ) : (
+                  column.label
+                )}
               </th>
             ))}
           </tr>
