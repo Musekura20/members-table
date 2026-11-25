@@ -1,62 +1,60 @@
-import { useEffect, useState } from 'react'
-import { useQueryClient } from '@tanstack/react-query'
-import { useUsers, userKeys } from './queries'
-import { fetchUsers } from '../../api/users'
-import { useDebounce } from '../../hooks/useDebounce'
-import { useTableParams } from '../../hooks/useTableParams'
-import UsersTable from './UsersTable.jsx'
+import { useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useUsers, userKeys } from "./queries";
+import { fetchUsers } from "../../api/users";
+import { useDebounce } from "../../hooks/useDebounce";
+import { useTableParams } from "../../hooks/useTableParams";
+import UsersTable from "./UsersTable.jsx";
 
 export default function UsersPage() {
-  const { params, update } = useTableParams()
-  const queryClient = useQueryClient()
+  const { params, update } = useTableParams();
+  const queryClient = useQueryClient();
 
-  const [search, setSearch] = useState(params.q)
-  const debouncedSearch = useDebounce(search, 400)
+  const [search, setSearch] = useState(params.q);
+  const debouncedSearch = useDebounce(search, 400);
 
-  const { data, isPending, isFetching, isError, refetch } = useUsers(params)
+  const { data, isPending, isFetching, isError, refetch } = useUsers(params);
 
   useEffect(() => {
-    setSearch(params.q)
-  }, [params.q])
+    setSearch(params.q);
+  }, [params.q]);
 
   useEffect(() => {
     if (debouncedSearch !== params.q) {
-      update({ q: debouncedSearch, gender: '' })
+      update({ q: debouncedSearch, gender: "" });
     }
-  }, [debouncedSearch, params.q, update])
+  }, [debouncedSearch, params.q, update]);
 
   function handleSort(column) {
     const nextOrder =
-      params.sortBy === column && params.order === 'asc'
-        ? 'desc'
-        : 'asc'
+      params.sortBy === column && params.order === "asc" ? "desc" : "asc";
 
     update({
       sortBy: column,
       order: nextOrder,
-    })
+    });
   }
 
   function handleGenderChange(event) {
     update({
       gender: event.target.value,
-      q: '',
-    })
-    setSearch('')
+      q: "",
+    });
+    setSearch("");
   }
 
   async function prefetchNextPage() {
-    if (!data || params.page * params.pageSize >= data.total) return
+    if (!data || params.page * params.pageSize >= data.total) return;
 
     const nextParams = {
       ...params,
       page: params.page + 1,
-    }
+    };
 
     await queryClient.prefetchQuery({
       queryKey: userKeys.list(nextParams),
       queryFn: () => fetchUsers(nextParams),
-    })
+    });
   }
 
   return (
@@ -95,6 +93,19 @@ export default function UsersPage() {
               <option value="male">Male</option>
               <option value="female">Female</option>
             </select>
+
+            <select
+              value={params.pageSize}
+              onChange={(event) =>
+                update({ pageSize: Number(event.target.value) })
+              }
+              className="rounded-lg border border-[#E8D7C6] px-4 py-3"
+              aria-label="Members per page"
+            >
+              <option value={10}>10 per page</option>
+              <option value={20}>20 per page</option>
+              <option value={50}>50 per page</option>
+            </select>
           </div>
 
           {isPending && (
@@ -105,9 +116,7 @@ export default function UsersPage() {
 
           {isError && (
             <div className="py-10 text-center">
-              <p className="mb-3 text-red-600">
-                We couldn't load the members.
-              </p>
+              <p className="mb-3 text-red-600">We couldn't load the members.</p>
               <button
                 onClick={() => refetch()}
                 className="rounded-lg bg-[#17243A] px-5 py-2 text-white"
@@ -125,9 +134,7 @@ export default function UsersPage() {
                 </p>
 
                 {isFetching && (
-                  <span className="text-sm text-[#B66D45]">
-                    Updating...
-                  </span>
+                  <span className="text-sm text-[#B66D45]">Updating...</span>
                 )}
               </div>
 
@@ -155,13 +162,14 @@ export default function UsersPage() {
                 </button>
 
                 <span className="text-sm text-gray-600">
-                  Page {params.page}
+                  Page {params.page} of{" "}
+                  {Math.ceil(data.total / params.pageSize)}
                 </span>
 
                 <button
                   onClick={async () => {
-                    await prefetchNextPage()
-                    update({ page: params.page + 1 })
+                    await prefetchNextPage();
+                    update({ page: params.page + 1 });
                   }}
                   disabled={params.page * params.pageSize >= data.total}
                   className="rounded-lg bg-[#17243A] px-4 py-2 text-white disabled:opacity-40"
@@ -174,5 +182,5 @@ export default function UsersPage() {
         </section>
       </div>
     </main>
-  )
+  );
 }
