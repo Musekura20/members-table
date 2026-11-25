@@ -1,3 +1,4 @@
+import UsersTableSkeleton from "./UsersTableSkeleton";
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUsers, userKeys } from "./queries";
@@ -109,14 +110,18 @@ export default function UsersPage() {
           </div>
 
           {isPending && (
-            <p className="py-10 text-center text-gray-500">
-              Loading members...
-            </p>
+            <div>
+              <p className="mb-4 text-sm text-gray-500">Loading members...</p>
+              <UsersTableSkeleton />
+            </div>
           )}
 
           {isError && (
             <div className="py-10 text-center">
-              <p className="mb-3 text-red-600">We couldn't load the members.</p>
+              <p className="mb-3 text-red-600">
+                We couldn't load the members. Please check your internet
+                connection and try again.
+              </p>
               <button
                 onClick={() => refetch()}
                 className="rounded-lg bg-[#17243A] px-5 py-2 text-white"
@@ -147,9 +152,29 @@ export default function UsersPage() {
                   onSort={handleSort}
                 />
               ) : (
-                <p className="py-10 text-center text-gray-500">
-                  No members found.
-                </p>
+                <div className="py-12 text-center">
+                  <h3 className="text-lg font-semibold text-[#17243A]">
+                    No members found
+                  </h3>
+
+                  <p className="mt-2 text-sm text-gray-500">
+                    Try changing your search or filters.
+                  </p>
+
+                  <button
+                    onClick={() => {
+                      setSearch("");
+                      update({
+                        q: "",
+                        gender: "",
+                        page: 1,
+                      });
+                    }}
+                    className="mt-4 rounded-lg bg-[#17243A] px-5 py-2 text-white hover:bg-[#263D5B]"
+                  >
+                    Clear search and filters
+                  </button>
+                </div>
               )}
 
               <div className="mt-6 flex items-center justify-between">
